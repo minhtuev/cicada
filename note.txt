@@ -1,0 +1,11 @@
+name format:
+year-month-date-11
+
+gps file:
+YYYYMMDDhhmmss.txt
+
+inside the actual gps file (different for some reason)
+NB: TXX -> T(XX-4) 
+
+video:
+YYYYMMDD_hhmmss_xxx.avi
