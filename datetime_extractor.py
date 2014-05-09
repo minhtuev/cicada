@@ -28,6 +28,7 @@ def read_gps_text_file(filename):
         line = str(line).strip().split(',')
         date_object = parser.parse(line[0])
         date_object -= datetime.timedelta(hours = 4)
+        date_object = date_object.replace(tzinfo = None)
         # remove noises
         if (date_object.year == 2014):
             result.append((date_object, float(line[1]), float(line[2])))
@@ -54,8 +55,8 @@ def get_video_datetime(filename):
     date_object = parser.parse(filename)
     return date_object
 
-print get_gps_text_files()
-video_files = get_video_files()
-print video_files
-print get_video_datetime(video_files[0])
+# print get_gps_text_files()
+# video_files = get_video_files()
+# print video_files
+# print get_video_datetime(video_files[0])
 # print get_all_gps_data()

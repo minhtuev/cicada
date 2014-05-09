@@ -21,19 +21,20 @@ def print_video_properties(cam):
     print "\t Framerate: ",get_frame_rate(cam)
     print "\t Number of Frames: ",get_num_frames(cam)
 
-def process_video(filename, gps_list):
+def process_video(filename, gps_list, seconds_delta = 1):
     cam = cv2.VideoCapture(filename)
     print_video_properties(cam)
     # video length in seconds
     video_length = get_video_length(cam)
     video_datetime = get_video_datetime(filename)
 
+    # create the folder for the images
     folder_name = filename.split(".")[0]
     # if the folder does not exist, make it
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
 
-    print "videolength", video_length
+    print "videolength:", video_length
     start_time = video_datetime
     end_time = (video_datetime + datetime.timedelta(seconds = video_length))
     print "video start time:", start_time.time()
@@ -43,25 +44,37 @@ def process_video(filename, gps_list):
     frame_time = 0
     frame_rate = get_frame_rate(cam)
     max_frame_num = get_num_frames(cam)
+    results = []
 
     # iterating through all (datetime, lat, lon) and find the proper time interval
     for (dt, lat, lon) in gps_list:
         if (start_time.time() <= dt.time()) and (dt.time() <= end_time.time()):
             frame_time = start_time + datetime.timedelta(seconds = frame_num*1.0/get_frame_rate(cam))
+            print "Extracting frames for" , dt, ", at coordinates:", lat, lon 
+ 
             # navigating toward the exact time
-            while abs((frame_time - dt).seconds) > 1 and frame_num <= max_frame_num:
-                success, image = vidcap.read()
+            while abs((frame_time - dt).seconds) > seconds_delta and frame_num <= max_frame_num:
+                success, image = cam.read()
                 frame_num += 1
                 frame_time = start_time + datetime.timedelta(seconds = frame_num*1.0/get_frame_rate(cam))
+ 
             # while at the exact time, extrac the frame and save
-            while abs((frame_time - dt).seconds) < 1 and frame_num <= max_frame_num:
+            while abs((frame_time - dt).seconds) < seconds_delta and frame_num <= max_frame_num:
                 cv2.imwrite(folder_name + ("/frame%d.jpg" % frame_num), image)
-                success, image = vidcap.read()
+                success, image = cam.read()
                 frame_num += 1
-                frame_time = start_time + datetime.timedelta(seconds = frame_num*1.0/get_frame_rate(cam))        
+                frame_time = start_time + datetime.timedelta(seconds = frame_num*1.0/get_frame_rate(cam))
+                results.append((frame_num, dt, lat, lon))
     cam.release()
+
+    # write the summary to a file:
+    f = open(folder_name + "/results.txt", 'w')
+    for (frame_num, dt, lat, lon) in results:
+        line = string.join([str(frame_num), str(dt), str(lat), str(lon)], ",") + "\n"
+        f.write(line)
+    f.close()
 
 filenames = get_video_files()
 gps_data = get_all_gps_data()
-
-process_video(filenames[0], gps_data)
+#pprint.pprint(gps_data)
+process_video(filenames[0], gps_data, 5)
