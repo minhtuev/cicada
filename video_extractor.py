@@ -1,7 +1,8 @@
 import cv2
 import os
-import pprint
-from datetime_extractor import *
+import datetime
+import string
+from datetime_extractor import get_video_datetime
 
 # get the length of the video in seconds
 def get_video_length(cam):
@@ -40,12 +41,11 @@ def process_video(filename, gps_list, seconds_delta = 1):
     print "video start time:", start_time.time()
     print "video end time:", end_time.time()
     
+    success, image = cam.read()            
     frame_num = 1
     frame_time = 0
-    frame_rate = get_frame_rate(cam)
     max_frame_num = get_num_frames(cam)
     results = []
-
     # iterating through all (datetime, lat, lon) and find the proper time interval
     for (dt, lat, lon) in gps_list:
         if (start_time.time() <= dt.time()) and (dt.time() <= end_time.time()):
@@ -60,11 +60,11 @@ def process_video(filename, gps_list, seconds_delta = 1):
  
             # while at the exact time, extrac the frame and save
             while abs((frame_time - dt).seconds) < seconds_delta and frame_num <= max_frame_num:
+                results.append((frame_num, dt, lat, lon))
                 cv2.imwrite(folder_name + ("/frame%d.jpg" % frame_num), image)
                 success, image = cam.read()
                 frame_num += 1
                 frame_time = start_time + datetime.timedelta(seconds = frame_num*1.0/get_frame_rate(cam))
-                results.append((frame_num, dt, lat, lon))
     cam.release()
 
     # write the summary to a file:
@@ -74,7 +74,4 @@ def process_video(filename, gps_list, seconds_delta = 1):
         f.write(line)
     f.close()
 
-filenames = get_video_files()
-gps_data = get_all_gps_data()
-#pprint.pprint(gps_data)
-process_video(filenames[0], gps_data, 5)
+    return results
