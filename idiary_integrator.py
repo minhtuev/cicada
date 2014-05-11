@@ -44,11 +44,14 @@ def integrate_video_frames(folder_name, frame_results, username = "Mikhail"):
         filename = folder_name + "/" + ("/frame%d.jpg" % frame_num)
         rawString = encode_image(filename)        
         timestamp = str(dt)
-        tag = "Mikhail video batch 1"
+        tag = "Mikhail video:" + folder_name
         extension = "jpg"
+        # note: coordinates are stores using micro lat & micro lon format
+        micro_lat = lat*1000000.0
+        micro_lon = lon*1000000.0
         data = {"rawImage":rawString,\
-                "latitude": lat,\
-                "longitude":lon,\
+                "latitude": micro_lat,\
+                "longitude": micro_lon,\
                 "timestamp":timestamp,\
                 "tag":tag,\
                 "extension":extension,\
@@ -70,7 +73,10 @@ def process_all_video_files(id = 0):
             process_video(filename, gps_data, seconds_delta = 1)
     print "done"
 
-process_all_video_files(1)
-# folder_name = filename.split(".")[0]      
-#results = parse_frame_results(folder_name)
-#integrate_video_frames(folder_name, results)
+# process_all_video_files(1)
+filenames = get_video_files()
+filename = filenames[0]
+folder_name = filename.split(".")[0]      
+print "Integrating video", folder_name
+results = parse_frame_results(folder_name)
+integrate_video_frames(folder_name, results)
