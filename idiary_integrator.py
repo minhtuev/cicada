@@ -63,20 +63,25 @@ def integrate_video_frames(folder_name, frame_results, username = "Mikhail"):
         if r.status_code == 500:
             dump_to_html(r.content)
 
-def process_all_video_files(id = 0):
+def process_all_video_files(id = 0, seconds_delta = 1):
     filenames = get_video_files()
     pprint.pprint(filenames)
     gps_data = get_all_gps_data()
     for index, filename in enumerate(filenames):
         if index >= id:
-            print "Extracting frames for", filename
-            process_video(filename, gps_data, seconds_delta = 1)
+            print "Extracting frames for", filename, "with delta = ", seconds_delta
+            process_video(filename, gps_data, seconds_delta)
     print "done"
 
-# process_all_video_files(1)
-filenames = get_video_files()
-filename = filenames[0]
-folder_name = filename.split(".")[0]      
-print "Integrating video", folder_name
-results = parse_frame_results(folder_name)
-integrate_video_frames(folder_name, results)
+process_all_video_files(2, 0.1)
+#filenames = get_video_files()
+#filename = filenames[5]
+#folder_name = filename.split(".")[0]      
+#gps_data = get_all_gps_data()
+#pprint.pprint(filenames)
+#print "Extracting frames for", filename
+#results = process_video(filename, gps_data, 0.1)
+
+# print "Integrating video", folder_name
+# results = parse_frame_results(folder_name)
+# integrate_video_frames(folder_name, results)
